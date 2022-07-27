@@ -213,3 +213,23 @@ export class GetTagReturn400 {
 	})
 	status: number;
 }
+
+export class TagDto {
+	@ApiProperty({
+		description: `id`,
+		example: 1,
+	})
+	id: number;
+
+	@ApiProperty({
+		description: `name of tag`,
+		example: `Tag name`,
+	})
+	name: string;
+
+	@ApiProperty({
+		description: `sortOrder`,
+		example: 0,
+	})
+	sortOrder: number;
+}

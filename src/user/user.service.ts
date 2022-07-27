@@ -1,11 +1,9 @@
+import {AuthDto} from "./../auth/dto/auth.dto";
 import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
 import {Repository} from "typeorm";
 import {User} from "./entity/user.entity";
 import * as bcrypt from "bcrypt";
 import {InjectRepository} from "@nestjs/typeorm";
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require("dotenv").config();
 
 @Injectable()
 export class UserService {
@@ -36,12 +34,55 @@ export class UserService {
 	}
 
 	/**
+	 * It updates a user's email, nickname, and password
+	 * @param {string} id - the id of the user to be updated
+	 * @param {AuthDto} dto - AuthDto - this is the data transfer object that we will use to update the user.
+	 * @returns The updated user
+	 */
+	async updateUser(id: string, dto: AuthDto) {
+		const oldUser = await this.findOneById(id);
+
+		let flag = null;
+
+		if (dto.email) flag = await this.findOneByEmail(dto.email);
+
+		if (flag)
+			throw new HttpException(
+				`Email ${dto.email} already exists`,
+				HttpStatus.BAD_REQUEST
+			);
+		else oldUser.email = dto.email;
+
+		if (dto.nickname) flag = await this.findOneByNickname(dto.nickname);
+
+		if (flag)
+			throw new HttpException(
+				`Nickname ${dto.nickname} already exists`,
+				HttpStatus.BAD_REQUEST
+			);
+		else oldUser.nickname = dto.nickname;
+
+		if (dto.password) oldUser.password = dto.password;
+
+		return await this.userRepository.save(oldUser);
+	}
+
+	/**
 	 * It returns a user object from the database, based on the email address passed in
 	 * @param {string} email - string - This is the email of the user we want to find.
 	 * @returns The user object with the email that was passed in.
 	 */
 	async findOneByEmail(email: string) {
 		return await this.userRepository.findOne({email: email});
+	}
+
+	/**
+	 * It returns a user object from the database, based on the id that was passed in
+	 * @param {string} id - string - The id of the user we want to find.
+	 * @returns The user with the given id.
+	 */
+	async findOneById(id: string) {
+		return await this.userRepository.findOne({id: id});
 	}
 
 	/**
@@ -53,5 +94,34 @@ export class UserService {
 		const oldUser = await this.userRepository.findOne({nickname: nickname});
 
 		return oldUser;
+	}
+
+	/**
+	 * It returns a user with all of their tags
+	 * @param {string} id - string - the id of the user we want to find
+	 * @returns An array of users with their tags.
+	 */
+	async findUserCardsById(id: string) {
+		const oldUser = await this.userRepository
+			.createQueryBuilder(`users`)
+			.leftJoinAndSelect(`users.tags`, `tag`)
+			.where(`users.id = :userId`, {userId: id})
+			.getOne();
+
+		return oldUser;
+	}
+
+	/**
+	 * It returns a user that was deleted
+	 * @param {string} id - string - the id of the user we want to delete
+	 * @returns user that was deleted.
+	 */
+	async deleteUser(id: string) {
+		const oldUser = await this.findOneById(id);
+
+		if (!oldUser)
+			throw new HttpException(`User ${id} not found`, HttpStatus.BAD_REQUEST);
+
+		return await this.userRepository.remove(oldUser);
 	}
 }

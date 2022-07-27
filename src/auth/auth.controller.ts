@@ -1,6 +1,6 @@
 import {Body, Controller, HttpException, Post, Req, Res, UseGuards} from "@nestjs/common";
 import {Request} from "express";
-import {ApiResponse, ApiTags} from "@nestjs/swagger";
+import {ApiCookieAuth, ApiResponse, ApiTags} from "@nestjs/swagger";
 import {Response} from "express";
 import {UserDecorator} from "src/user/decorators/user.decorator";
 import {AuthService} from "./auth.service";
@@ -78,6 +78,7 @@ export class AuthController {
 		description: `OK`,
 		type: LogoutUserReturn200,
 	})
+	@ApiCookieAuth(`jwt`)
 	async logout(@UserDecorator(`email`) email: string, @Req() req: Request) {
 		req.headers.authorization = null;
 
