@@ -124,4 +124,28 @@ export class TagService {
 			return error;
 		}
 	}
+
+	async getAllTags(sortByOrder: boolean, SortByName: boolean) {
+		let tags = null;
+		if (sortByOrder)
+			tags = await this.tagRepository
+				.createQueryBuilder(`tags`)
+				.leftJoinAndSelect(`tags.creator`, `user`)
+				.orderBy(`tags.sortOrder`)
+				.getMany();
+
+		if (SortByName)
+			tags = await this.tagRepository
+				.createQueryBuilder(`tags`)
+				.leftJoinAndSelect(`tags.creator`, `user`)
+				.orderBy(`tags.name`)
+				.getMany();
+
+		if (!tags)
+			tags = await this.tagRepository
+				.createQueryBuilder(`tags`)
+				.leftJoinAndSelect(`tags.creator`, `user`)
+				.getMany();
+		return tags;
+	}
 }

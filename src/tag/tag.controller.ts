@@ -8,6 +8,7 @@ import {
 	Param,
 	Post,
 	Put,
+	Query,
 	UseGuards,
 } from "@nestjs/common";
 import {UserDecorator} from "../user/decorators/user.decorator";
@@ -24,7 +25,7 @@ import {
 	UpdateTagReturn204,
 	UpdateTagReturn400,
 } from "./dto/tag.dto";
-import {ApiCookieAuth, ApiResponse, ApiTags} from "@nestjs/swagger";
+import {ApiCookieAuth, ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
 import {Tag} from "./entity/tag.entity";
 import {TagResponse} from "types";
 
@@ -159,6 +160,60 @@ export class TagController {
 			error: false,
 			status: 204,
 			message: `Tag was deleted`,
+		};
+	}
+
+	@Get(``)
+	@UseGuards(AuthGuard)
+	@ApiCookieAuth(`jwt`)
+	@ApiQuery({
+		name: "pageSize",
+		type: Number,
+		description: "Size of page",
+		required: false,
+	})
+	@ApiQuery({
+		name: "page",
+		type: Number,
+		description: "Number of page",
+		required: false,
+	})
+	@ApiQuery({
+		name: "sortByOrder",
+		type: Boolean,
+		description: "flag of sort by order",
+		required: false,
+	})
+	@ApiQuery({
+		name: "sortByName",
+		type: Boolean,
+		description: "flag of sort by name",
+		required: false,
+	})
+	async getTags(
+		@Query(`pageSize`) pageSize?: number,
+		@Query(`page`) page?: number,
+		@Query(`sortByOrder`) sortByOrder?: boolean,
+		@Query(`sortByName`) sortByName?: boolean
+	) {
+		const res = await this.tagService.getAllTags(sortByOrder, sortByName);
+		const tags = res.map(tag => this.prepareResponse(tag));
+
+		if (!pageSize) pageSize = 10;
+		const pageCount = Math.ceil(res.length / pageSize);
+
+		if (!page) page = 1;
+		if (page > pageCount) page = pageCount;
+
+		const data = tags.slice(page * pageSize - pageSize, page * pageSize);
+
+		return {
+			data,
+			meta: {
+				page: page,
+				pageSize: pageCount,
+				quantity: res.length,
+			},
 		};
 	}
 
