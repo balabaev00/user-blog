@@ -1,6 +1,19 @@
 import {ApiProperty} from "@nestjs/swagger";
-import {IsEmail, IsString, Matches} from "class-validator";
+import {IsDefined, IsEmail, IsString, Matches} from "class-validator";
 
+export class TokenResponse {
+	@ApiProperty({
+		description: `Token`,
+		example: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiYWRtaW5AbWFpbC5ydSIsImlhdCI6MTY1Nzg5MjU3NSwiZXhwIjoxNjU3ODkzNDc1fQ.i2Hh-ORRf53KNWXiCqxe25z5gHMuL3HZ68xE5yP6OE0`,
+	})
+	token: string;
+
+	@ApiProperty({
+		description: `Expire token`,
+		example: 1800,
+	})
+	expire: 1800;
+}
 export class AuthDto {
 	@ApiProperty({
 		description: `Email`,
@@ -8,6 +21,7 @@ export class AuthDto {
 	})
 	@IsString()
 	@IsEmail()
+	@IsDefined()
 	email: string;
 
 	@ApiProperty({
@@ -15,13 +29,18 @@ export class AuthDto {
 		example: `123789qwe`,
 	})
 	@IsString()
-	@Matches("^(?=.*[A-Za-z])(?=.*d)[A-Za-zd]{8,}$")
+	@IsDefined()
+	@Matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/, {
+		message: `Passwor must has a 1 one character, 1 number and his size must be >=8`,
+	})
 	password: string;
 
 	@ApiProperty({
 		description: `Nickname`,
 		example: `Admin3000`,
 	})
+	@IsDefined()
+	@IsString()
 	nickname: string;
 }
 
@@ -30,12 +49,16 @@ export class LoginDto {
 		description: `Email`,
 		example: `admin@mail.ru`,
 	})
+	@IsDefined()
+	@IsString()
 	email: string;
 
 	@ApiProperty({
 		description: `Password`,
 		example: `123789qwe`,
 	})
+	@IsDefined()
+	@IsString()
 	password: string;
 }
 
@@ -48,9 +71,12 @@ export class CreateUserReturn201 {
 
 	@ApiProperty({
 		description: `User token`,
-		example: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiYWRtaW5AbWFpbC5ydSIsImlhdCI6MTY1Nzg5MjU3NSwiZXhwIjoxNjU3ODkzNDc1fQ.i2Hh-ORRf53KNWXiCqxe25z5gHMuL3HZ68xE5yP6OE0`,
+		example: {
+			token: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiYWRtaW5AbWFpbC5ydSIsImlhdCI6MTY1Nzg5MjU3NSwiZXhwIjoxNjU3ODkzNDc1fQ.i2Hh-ORRf53KNWXiCqxe25z5gHMuL3HZ68xE5yP6OE0`,
+			expire: 1800,
+		},
 	})
-	token: string;
+	value: TokenResponse;
 
 	@ApiProperty({
 		description: `Status code`,
@@ -88,9 +114,12 @@ export class LoginUserReturn200 {
 
 	@ApiProperty({
 		description: `User token`,
-		example: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiYWRtaW5AbWFpbC5ydSIsImlhdCI6MTY1Nzg5MjU3NSwiZXhwIjoxNjU3ODkzNDc1fQ.i2Hh-ORRf53KNWXiCqxe25z5gHMuL3HZ68xE5yP6OE0`,
+		example: {
+			token: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiYWRtaW5AbWFpbC5ydSIsImlhdCI6MTY1Nzg5MjU3NSwiZXhwIjoxNjU3ODkzNDc1fQ.i2Hh-ORRf53KNWXiCqxe25z5gHMuL3HZ68xE5yP6OE0`,
+			expire: 1800,
+		},
 	})
-	token: string;
+	value: TokenResponse;
 
 	@ApiProperty({
 		description: `Status code`,

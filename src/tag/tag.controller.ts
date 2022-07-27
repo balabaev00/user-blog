@@ -1,4 +1,3 @@
-import {User} from "../user/entity/user.entity";
 import {AuthGuard} from "../auth/guards/auth.guard";
 import {
 	Body,
@@ -14,23 +13,20 @@ import {
 import {UserDecorator} from "../user/decorators/user.decorator";
 import {TagService} from "./tag.service";
 import {
-	CreateBlogDto,
-	CreateBlogReturn201,
-	CreateBlogReturn400,
 	CreateTagDto,
 	CreateTagReturn201,
 	CreateTagReturn400,
-	DeleteBlogReturn204,
-	DeleteBlogReturn400,
-	GetBlogByUserIdReturn200,
-	GetBlogsReturn200,
-	UpdateBlogDto,
-	UpdateBlogReturn204,
-	UpdateBlogReturn400,
+	DeleteTagReturn204,
+	DeleteTagReturn400,
+	GetTagReturn200,
+	GetTagReturn400,
+	UpdateTagDto,
+	UpdateTagReturn204,
+	UpdateTagReturn400,
 } from "./dto/tag.dto";
 import {ApiCookieAuth, ApiResponse, ApiTags} from "@nestjs/swagger";
 import {Tag} from "./entity/tag.entity";
-import {BlogResponse} from "types";
+import {TagResponse} from "types";
 
 @Controller(`tag`)
 @ApiTags(`Tag`)
@@ -74,6 +70,17 @@ export class TagController {
 
 	@Get(`:id`)
 	@UseGuards(AuthGuard)
+	@ApiResponse({
+		status: 200,
+		description: `OK`,
+		type: GetTagReturn200,
+	})
+	@ApiResponse({
+		status: 400,
+		description: `Something is wrong`,
+		type: GetTagReturn400,
+	})
+	@ApiCookieAuth(`jwt`)
 	async getById(@Param(`id`) id: number) {
 		const res = await this.tagService.findById(id);
 
@@ -87,14 +94,7 @@ export class TagController {
 		return {
 			error: false,
 			status: 200,
-			tag: {
-				name: res.name,
-				sortOrder: res.sortOrder,
-				creator: {
-					nickname: res.creator.nickname,
-					uid: res.creator.id,
-				},
-			},
+			tag: this.prepareResponse(res),
 		};
 	}
 
@@ -103,18 +103,18 @@ export class TagController {
 	@ApiResponse({
 		status: 204,
 		description: `OK`,
-		type: UpdateBlogReturn204,
+		type: UpdateTagReturn204,
 	})
 	@ApiResponse({
 		status: 400,
 		description: `Something is wrong`,
-		type: UpdateBlogReturn400,
+		type: UpdateTagReturn400,
 	})
 	@ApiCookieAuth(`jwt`)
 	async update(
 		@Param(`id`) tagId: number,
-		@Body() dto: UpdateBlogDto,
-		@UserDecorator(`userId`) userId: number
+		@Body() dto: UpdateTagDto,
+		@UserDecorator(`userId`) userId: string
 	) {
 		const res = await this.tagService.update(tagId, dto, userId);
 
@@ -128,60 +128,25 @@ export class TagController {
 		return {
 			error: false,
 			status: 204,
-			blog: this.prepareResponse(res),
+			tag: this.prepareResponse(res),
 		};
 	}
 
-	@Get(``)
-	@ApiResponse({
-		status: 200,
-		description: `Blogs array`,
-		type: GetBlogsReturn200,
-	})
-	async getAll() {
-		const res = await this.blogService.findAll();
-
-		return {
-			error: false,
-			status: 200,
-			blogs: res.map(item => this.prepareResponse(item)),
-		};
-	}
-
-	@Get(`:userId`)
-	@ApiResponse({
-		status: 200,
-		description: `Blogs array`,
-		type: GetBlogByUserIdReturn200,
-	})
-	async getByUserId(@Param(`userId`) userId: number) {
-		const res = await this.blogService.findByUserId(userId);
-
-		return {
-			error: false,
-			status: 200,
-			blogs: res.map(item => this.prepareResponse(item)),
-		};
-	}
-
-	@Delete(`:blogId`)
+	@Delete(`:id`)
 	@UseGuards(AuthGuard)
 	@ApiResponse({
 		status: 204,
-		description: `Blog was deleted`,
-		type: DeleteBlogReturn204,
+		description: `Tag was deleted`,
+		type: DeleteTagReturn204,
 	})
 	@ApiResponse({
 		status: 400,
 		description: `Something is wrong`,
-		type: DeleteBlogReturn400,
+		type: DeleteTagReturn400,
 	})
 	@ApiCookieAuth(`jwt`)
-	async delete(
-		@Param(`blogId`) blogId: number,
-		@UserDecorator(`userId`) userId: number
-	) {
-		const res = await this.blogService.delete(blogId, userId);
+	async delete(@Param(`id`) tagId: number, @UserDecorator(`userId`) userId: string) {
+		const res = await this.tagService.delete(tagId, userId);
 
 		if (res instanceof HttpException)
 			return {
@@ -193,17 +158,17 @@ export class TagController {
 		return {
 			error: false,
 			status: 204,
-			message: `Blog was deleted`,
+			message: `Tag was deleted`,
 		};
 	}
 
-	private prepareResponse(res: any) {
+	private prepareResponse(tag: Tag): TagResponse {
 		return {
-			name: res.name,
-			sortOrder: res.sortOrder,
+			name: tag.name,
+			sortOrder: tag.sortOrder,
 			creator: {
-				nickname: res.creator.nickname,
-				uid: res.creator.id,
+				nickname: tag.creator.nickname,
+				uid: tag.creator.id,
 			},
 		};
 	}

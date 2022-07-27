@@ -1,7 +1,6 @@
 import {UserService} from "../user/user.service";
-import {User} from "../user/entity/user.entity";
 import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
-import {CreateBlogDto, CreateTagDto, UpdateBlogDto, UpdateTagDto} from "./dto/tag.dto";
+import {CreateTagDto, UpdateTagDto} from "./dto/tag.dto";
 import {InjectRepository} from "@nestjs/typeorm";
 import {Tag} from "./entity/tag.entity";
 import {Repository} from "typeorm";
@@ -46,10 +45,10 @@ export class TagService {
 	 * It finds a tag by id, checks if the user is the owner of the tag, and then updates the tag with the new data
 	 * @param {number} tagId - The id of the tag we want to update.
 	 * @param {UpdateTagDto} dto - UpdateTagDto - This is the DTO that we created earlier.
-	 * @param {number} userId - The userId of the user who is making the request.
+	 * @param {string} userId - The userId of the user who is making the request.
 	 * @returns The updated tag.
 	 */
-	async update(tagId: number, dto: UpdateTagDto, userId: number) {
+	async update(tagId: number, dto: UpdateTagDto, userId: string) {
 		try {
 			const oldBlog = await this.findAndCheck(tagId, userId);
 
@@ -65,10 +64,10 @@ export class TagService {
 	/**
 	 * It finds a tag by its id and checks if the user is the owner of the tag
 	 * @param {number} tagId - The id of the tag to be updated.
-	 * @param {number} userId - The userId of the user who is trying to update the blog.
+	 * @param {string} userId - The userId of the user who is trying to update the blog.
 	 * @returns The oldTag object
 	 */
-	async findAndCheck(tagId: number, userId: number) {
+	async findAndCheck(tagId: number, userId: string) {
 		const oldTag = await this.tagRepository
 			.createQueryBuilder(`tag`)
 			.leftJoinAndSelect(`tag.creator`, `user`)
@@ -101,33 +100,10 @@ export class TagService {
 	}
 
 	/**
-	 * It returns a promise that resolves to an array of blog posts
-	 * @returns An array of all the blogs in the database.
+	 * It finds a tag by name
+	 * @param {string} name - The name of the tag we want to find.
+	 * @returns The tag with the name that was passed in.
 	 */
-	async findAll() {
-		const blogs = await this.blogRepository
-			.createQueryBuilder(`blog`)
-			.leftJoinAndSelect(`blog.author`, `user`)
-			.getMany();
-
-		return blogs;
-	}
-
-	/**
-	 * It return a promise that resolves to an array of blog posts for userId
-	 * @param {number} userId - number - The user ID of the user whose blogs we want to find.
-	 * @returns An array of Blogs
-	 */
-	async findByUserId(userId: number) {
-		const blogs = await this.blogRepository
-			.createQueryBuilder(`blog`)
-			.leftJoinAndSelect(`blog.author`, `user`)
-			.where(`blog.author_id = :userId`, {userId: userId})
-			.getMany();
-
-		return blogs;
-	}
-
 	async findByName(name: string) {
 		const tag = await this.tagRepository.findOne({name: name});
 
@@ -135,17 +111,17 @@ export class TagService {
 	}
 
 	/**
-	 * It finds a blog by its id and checks if the user is the owner of the blog. If the user is the
-	 * owner, it deletes the blog
-	 * @param {number} blogId - The id of the blog to be deleted
-	 * @param {number} userId - The id of the user who is trying to delete the blog.
-	 * @returns The blog is being returned.
+	 * It finds a tag by its id and checks if it belongs to the user, then deletes it
+	 * @param {number} tagId - The id of the tag to be deleted.
+	 * @param {string} userId - The userId of the user who is making the request.
+	 * @returns The tag that was deleted.
 	 */
-	async delete(blogId: number, userId: number) {
-		const blog = await this.findAndCheck(blogId, userId);
-
-		if (blog instanceof HttpException) return blog;
-
-		return await this.blogRepository.remove(blog);
+	async delete(tagId: number, userId: string) {
+		try {
+			const oldTag = await this.findAndCheck(tagId, userId);
+			return await this.tagRepository.remove(oldTag);
+		} catch (error) {
+			return error;
+		}
 	}
 }

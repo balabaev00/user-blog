@@ -21,7 +21,11 @@ export class AuthService {
 	 */
 	async signUpLocal(dto: AuthDto) {
 		try {
-			const user = await this.userService.createUser(dto.email, dto.password);
+			const user = await this.userService.createUser(
+				dto.email,
+				dto.password,
+				dto.nickname
+			);
 
 			const accessToken = this.generateToken({
 				userId: user.id,
@@ -68,7 +72,7 @@ export class AuthService {
 
 		return {
 			token,
-			expire: this.configService.get<number>(`JWT_EXPIRES_IN`) * 60,
+			expire: this.configService.get<number>(`JWT_TIME_COUNT`) * 60,
 		};
 	}
 

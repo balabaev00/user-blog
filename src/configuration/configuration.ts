@@ -16,6 +16,5 @@ export default registerAs(`app`, () => ({
 		},
 		synchronize: JSON.parse(env.POSTGRES_SYNC),
 		logging: JSON.parse(env.POSTGRES_LOGGING),
-		ssl: JSON.parse(env.POSTGRES_SSL),
 	},
 }));

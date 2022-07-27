@@ -16,7 +16,7 @@ import {
 import {AuthGuard} from "./guards/auth.guard";
 
 @Controller(`auth`)
-@ApiTags("auth")
+@ApiTags("Auth")
 export class AuthController {
 	constructor(private authService: AuthService) {}
 
@@ -32,21 +32,18 @@ export class AuthController {
 		type: CreateUserReturn400,
 	})
 	async signUpLocal(@Body() dto: AuthDto, @Res({passthrough: true}) r: Response) {
-		try {
-			const res = await this.authService.signUpLocal(dto);
-
-			return {
-				error: false,
-				status: 201,
-				token: res,
-			};
-		} catch (error) {
+		const res = await this.authService.signUpLocal(dto);
+		if (res instanceof HttpException)
 			return {
 				error: true,
-				status: error.status,
-				errorMessage: error.response,
+				status: res.getStatus(),
+				errorMessage: res.getResponse(),
 			};
-		}
+		return {
+			error: false,
+			status: 201,
+			token: res,
+		};
 	}
 
 	@Post(`login`)

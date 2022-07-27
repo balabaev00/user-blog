@@ -20,9 +20,6 @@ const conf = {
 	cli: {
 		migrationsDir: env.POSTGRES_CLI_MIGRATIONSDIR,
 	},
-	ssl: {
-		rejectUnauthorized: false,
-	},
 };
 
 const config = JSON.stringify(conf);

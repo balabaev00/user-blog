@@ -1,18 +1,13 @@
 export interface AccessTokenPayload {
-	userId: number;
+	userId: string;
 	email: string;
 }
 
-export interface BlogResponse {
-	id: number;
+export interface TagResponse {
 	name: string;
-	createdAt: Date;
-	authorId: number;
-}
-
-export interface MessageResponse {
-	id: number;
-	message: string;
-	createdAt: Date;
-	authorId: number;
+	sortOrder: number;
+	creator: {
+		nickname: string;
+		uid: string;
+	};
 }

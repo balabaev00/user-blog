@@ -1,6 +1,6 @@
+import {TagResponse} from "types";
 import {ApiProperty} from "@nestjs/swagger";
 import {IsNotEmpty, IsNumber, IsString, MaxLength} from "class-validator";
-import {Tag} from "../entity/tag.entity";
 
 export class CreateTagDto {
 	@ApiProperty({
@@ -89,15 +89,17 @@ export class UpdateTagReturn204 {
 	error: boolean;
 
 	@ApiProperty({
-		description: `Blog entity`,
+		description: `Tag response`,
 		example: {
-			id: 1,
-			name: `My blog`,
-			createdAt: new Date(),
-			authorId: 1,
+			creator: {
+				nickname: "example",
+				uid: "exam-pl-eUID",
+			},
+			name: "example",
+			sortOrder: "0",
 		},
 	})
-	blog: Blog;
+	tag: TagResponse;
 
 	@ApiProperty({
 		description: `Status code`,
@@ -106,7 +108,7 @@ export class UpdateTagReturn204 {
 	status: number;
 }
 
-export class UpdateBlogReturn400 {
+export class UpdateTagReturn400 {
 	@ApiProperty({
 		description: `false - all good, true - check errorMessage`,
 		example: true,
@@ -115,7 +117,7 @@ export class UpdateBlogReturn400 {
 
 	@ApiProperty({
 		description: `Description of error`,
-		example: `Blog has not been updated`,
+		example: `Tag has not been updated`,
 	})
 	errorMessage: string;
 
@@ -126,7 +128,7 @@ export class UpdateBlogReturn400 {
 	status: number;
 }
 
-export class DeleteBlogReturn204 {
+export class DeleteTagReturn204 {
 	@ApiProperty({
 		description: `false - all good, true - check errorMessage`,
 		example: false,
@@ -135,7 +137,7 @@ export class DeleteBlogReturn204 {
 
 	@ApiProperty({
 		description: `Message`,
-		example: `Blog was deleted`,
+		example: `Tag was deleted`,
 	})
 	message: string;
 
@@ -146,7 +148,7 @@ export class DeleteBlogReturn204 {
 	status: number;
 }
 
-export class DeleteBlogReturn400 {
+export class DeleteTagReturn400 {
 	@ApiProperty({
 		description: `false - all good, true - check errorMessage`,
 		example: true,
@@ -155,7 +157,7 @@ export class DeleteBlogReturn400 {
 
 	@ApiProperty({
 		description: `Description of error`,
-		example: `Blog has not been deleted`,
+		example: `Tag has not been deleted`,
 	})
 	errorMessage: string;
 
@@ -165,8 +167,7 @@ export class DeleteBlogReturn400 {
 	})
 	status: number;
 }
-
-export class GetBlogByUserIdReturn200 {
+export class GetTagReturn200 {
 	@ApiProperty({
 		description: `false - all good, true - check errorMessage`,
 		example: false,
@@ -174,60 +175,41 @@ export class GetBlogByUserIdReturn200 {
 	error: boolean;
 
 	@ApiProperty({
-		description: `Blog entities`,
-		example: [
-			{
-				id: 1,
-				name: `My blog`,
-				createdAt: new Date(),
-				authorId: 1,
+		description: `Tag response`,
+		example: {
+			creator: {
+				nickname: "example",
+				uid: "exam-pl-eUID",
 			},
-			{
-				id: 2,
-				name: `Test blog`,
-				createdAt: new Date(),
-				authorId: 1,
-			},
-		],
+			name: "example",
+			sortOrder: "0",
+		},
 	})
-	blogs: Blog[];
-
-	@ApiProperty({
-		description: `Status code`,
-		example: `204`,
-	})
-	status: number;
-}
-
-export class GetBlogsReturn200 {
-	@ApiProperty({
-		description: `false - all good, true - check errorMessage`,
-		example: false,
-	})
-	error: boolean;
-
-	@ApiProperty({
-		description: `Blog entities`,
-		example: [
-			{
-				id: 1,
-				name: `My blog`,
-				createdAt: new Date(),
-				authorId: 1,
-			},
-			{
-				id: 2,
-				name: `Test blog`,
-				createdAt: new Date(),
-				authorId: 1,
-			},
-		],
-	})
-	blogs: Blog[];
+	tag: TagResponse;
 
 	@ApiProperty({
 		description: `Status code`,
 		example: `200`,
+	})
+	status: number;
+}
+
+export class GetTagReturn400 {
+	@ApiProperty({
+		description: `false - all good, true - check errorMessage`,
+		example: true,
+	})
+	error: boolean;
+
+	@ApiProperty({
+		description: `Description of error`,
+		example: `Tag has not found`,
+	})
+	errorMessage: string;
+
+	@ApiProperty({
+		description: `Status code`,
+		example: `400`,
 	})
 	status: number;
 }

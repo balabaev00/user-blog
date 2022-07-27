@@ -1,8 +1,8 @@
-import {TagModule} from "../tag/tag.module";
-import {AuthMiddleware} from "./../auth/middlewares/auth.middleware";
-import {AuthModule} from "./../auth/auth.module";
 import {MiddlewareConsumer, Module, RequestMethod} from "@nestjs/common";
-import {UserModule} from "./../user/user.module";
+import {AuthModule} from "src/auth/auth.module";
+import {AuthMiddleware} from "src/auth/middlewares/auth.middleware";
+import {TagModule} from "src/tag/tag.module";
+import {UserModule} from "src/user/user.module";
 
 @Module({
 	imports: [AuthModule, UserModule, TagModule],
