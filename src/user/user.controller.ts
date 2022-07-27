@@ -5,6 +5,7 @@ import {ApiCookieAuth, ApiResponse, ApiTags} from "@nestjs/swagger";
 import {AuthGuard} from "src/auth/guards/auth.guard";
 import {UserDecorator} from "./decorators/user.decorator";
 import {
+	AddTagsToUserReturn400,
 	GetUserTagsReturn200,
 	GetUserWithTagsReturn200,
 	UpdateUserReturn204,
@@ -105,7 +106,12 @@ export class UserController {
 	})
 	@ApiCookieAuth(`jwt`)
 	async getUserCards(@UserDecorator(`userId`) id: string) {
-		const tags = (await this.userService.findUserTagsById(id)).tags;
+		const tags = (await this.userService.findUserCreatorTagsById(id)).tags.map(
+			item => {
+				delete item.creator;
+				return item;
+			}
+		);
 
 		return {
 			error: false,
@@ -116,8 +122,32 @@ export class UserController {
 
 	@Post(`tag`)
 	@UseGuards(AuthGuard)
+	@ApiResponse({
+		status: 200,
+		description: `OK`,
+		type: GetUserTagsReturn200,
+	})
+	@ApiResponse({
+		status: 400,
+		description: `Something was wrong`,
+		type: AddTagsToUserReturn400,
+	})
 	@ApiCookieAuth(`jwt`)
 	async addTags(@UserDecorator(`userId`) id: string, @Body() dto: TagsNumberDto) {
-		const res = await this.userService.addTagsById(id, dto);
+		try {
+			const res = await this.userService.addTagsById(id, dto);
+
+			return {
+				error: false,
+				status: 200,
+				tags: res,
+			};
+		} catch (error) {
+			return {
+				error: true,
+				status: error.status,
+				errorMessage: error.response,
+			};
+		}
 	}
 }

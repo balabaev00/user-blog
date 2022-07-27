@@ -173,3 +173,23 @@ export class GetUserTagsReturn200 {
 	})
 	tags: TagDto[];
 }
+
+export class AddTagsToUserReturn400 {
+	@ApiProperty({
+		description: `false - all good, true - check errorMessage`,
+		example: false,
+	})
+	error: boolean;
+
+	@ApiProperty({
+		description: `Error message`,
+		example: `User not found`,
+	})
+	errorMessage: string;
+
+	@ApiProperty({
+		description: `Status code`,
+		example: `400`,
+	})
+	status: number;
+}

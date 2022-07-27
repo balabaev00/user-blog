@@ -242,6 +242,10 @@ export class TagDto {
 }
 
 export class TagsNumberDto {
+	@ApiProperty({
+		description: `Tags array`,
+		example: [1, 2, 3, 4],
+	})
 	@IsNotEmpty()
 	@IsArray()
 	@IsDefined()

@@ -27,11 +27,11 @@ export class Tag {
 	@ManyToMany(() => User, user => user.tags)
 	@JoinTable({
 		name: "tags_and_users",
-		joinColumn: {
+		inverseJoinColumn: {
 			name: "user_id",
 			referencedColumnName: "id",
 		},
-		inverseJoinColumn: {
+		joinColumn: {
 			name: "tag_id",
 			referencedColumnName: "id",
 		},

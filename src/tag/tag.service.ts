@@ -37,6 +37,7 @@ export class TagService {
 		if (!creator) throw new HttpException(`User not found`, HttpStatus.BAD_REQUEST);
 
 		newTag.creator = creator;
+		newTag.users = [creator];
 
 		return await this.tagRepository.save(newTag);
 	}
@@ -130,7 +131,7 @@ export class TagService {
 		if (sortByOrder)
 			tags = await this.tagRepository
 				.createQueryBuilder(`tags`)
-				.leftJoinAndSelect(`tags.creator`, `user`)
+				.leftJoinAndSelect(`tags.users`, `user`)
 				.orderBy(`tags.sortOrder`)
 				.getMany();
 

@@ -1,3 +1,4 @@
+import {Tag} from "./../tag/entity/tag.entity";
 import {TagsNumberDto} from "./../tag/dto/tag.dto";
 import {AuthDto} from "./../auth/dto/auth.dto";
 import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
@@ -127,6 +128,17 @@ export class UserService {
 		return oldUser;
 	}
 
+	async findUserCreatorTagsById(id: string) {
+		const oldUser = await this.userRepository
+			.createQueryBuilder(`users`)
+			.leftJoinAndSelect(`users.tags`, `tag`)
+			.leftJoinAndSelect(`tag.creator`, `user`)
+			.where(`user.id = :userId`, {userId: id})
+			.getOne();
+
+		return oldUser;
+	}
+
 	/**
 	 * It returns a user that was deleted
 	 * @param {string} id - string - the id of the user we want to delete
@@ -148,19 +160,39 @@ export class UserService {
 		await queryRunner.connect();
 		await queryRunner.startTransaction();
 
-		const tags = dto.tags;
-		tags.forEach(async tagId => {
-			try {
-				const oldTag = await this.findTagByTagId(tagId);
-				// await queryRunner.manager.insert(Receiving, receiving);
+		const user = await this.findUserTagsById(id);
 
-				await queryRunner.commitTransaction();
-			} catch (error) {
-				await queryRunner.rollbackTransaction();
-				throw error;
-			} finally {
-				await queryRunner.release();
+		if (!user)
+			throw new HttpException(`User ${id} not found`, HttpStatus.BAD_REQUEST);
+
+		const tags = dto.tags;
+		try {
+			for (let i = 0; i < tags.length; i++) {
+				const tagId = tags[i];
+
+				let oldTag = await queryRunner.manager.query(
+					`SELECT * FROM tags WHERE id=${tagId}`
+				);
+
+				oldTag = oldTag[0];
+
+				if (!oldTag)
+					throw new HttpException(
+						`Tag <${tagId}> not found`,
+						HttpStatus.BAD_REQUEST
+					);
+
+				user.tags = [...user.tags, oldTag];
+				await queryRunner.manager.save(user);
 			}
-		});
+		} catch (error) {
+			await queryRunner.rollbackTransaction();
+			throw error;
+		}
+
+		await queryRunner.commitTransaction();
+		await queryRunner.release();
+
+		return (await this.findUserTagsById(id)).tags;
 	}
 }
