@@ -1,15 +1,17 @@
+import {TagsNumberDto} from "./../tag/dto/tag.dto";
 import {AuthDto} from "./../auth/dto/auth.dto";
-import {Body, Controller, Delete, Get, Put, Req, Res, UseGuards} from "@nestjs/common";
+import {Body, Controller, Delete, Get, Post, Put, Req, UseGuards} from "@nestjs/common";
 import {ApiCookieAuth, ApiResponse, ApiTags} from "@nestjs/swagger";
 import {AuthGuard} from "src/auth/guards/auth.guard";
 import {UserDecorator} from "./decorators/user.decorator";
 import {
-	GetUserWithCardsReturn200,
+	GetUserTagsReturn200,
+	GetUserWithTagsReturn200,
 	UpdateUserReturn204,
 	UpdateUserReturn400,
 } from "./dto/user.dto";
 import {UserService} from "./user.service";
-import {Request, Response} from "express";
+import {Request} from "express";
 
 @Controller(`user`)
 @ApiTags(`User`)
@@ -21,11 +23,11 @@ export class UserController {
 	@ApiResponse({
 		status: 200,
 		description: `OK`,
-		type: GetUserWithCardsReturn200,
+		type: GetUserWithTagsReturn200,
 	})
 	@ApiCookieAuth(`jwt`)
 	async get(@UserDecorator(`userId`) id: string) {
-		const res = await this.userService.findUserCardsById(id);
+		const res = await this.userService.findUserTagsById(id);
 
 		return {
 			error: false,
@@ -92,5 +94,30 @@ export class UserController {
 				errorMessage: error.response,
 			};
 		}
+	}
+
+	@Get(`tag/my`)
+	@UseGuards(AuthGuard)
+	@ApiResponse({
+		status: 200,
+		description: `OK`,
+		type: GetUserTagsReturn200,
+	})
+	@ApiCookieAuth(`jwt`)
+	async getUserCards(@UserDecorator(`userId`) id: string) {
+		const tags = (await this.userService.findUserTagsById(id)).tags;
+
+		return {
+			error: false,
+			status: 200,
+			tags,
+		};
+	}
+
+	@Post(`tag`)
+	@UseGuards(AuthGuard)
+	@ApiCookieAuth(`jwt`)
+	async addTags(@UserDecorator(`userId`) id: string, @Body() dto: TagsNumberDto) {
+		const res = await this.userService.addTagsById(id, dto);
 	}
 }

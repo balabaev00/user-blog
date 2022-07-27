@@ -1,6 +1,7 @@
+import {TagsNumberDto} from "./../tag/dto/tag.dto";
 import {AuthDto} from "./../auth/dto/auth.dto";
 import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
-import {Repository} from "typeorm";
+import {getConnection, Repository} from "typeorm";
 import {User} from "./entity/user.entity";
 import * as bcrypt from "bcrypt";
 import {InjectRepository} from "@nestjs/typeorm";
@@ -77,6 +78,21 @@ export class UserService {
 	}
 
 	/**
+	 * It finds a user by the tag id
+	 * @param {number} id - number - the id of the tag we want to find
+	 * @returns The user with the tag id
+	 */
+	async findTagByTagId(id: number) {
+		const oldTag = await this.userRepository
+			.createQueryBuilder(`users`)
+			.leftJoinAndSelect(`users.tags`, `tag`)
+			.where(`users.tags.id = :tagId`, {tagId: id})
+			.getOne();
+
+		return oldTag;
+	}
+
+	/**
 	 * It returns a user object from the database, based on the id that was passed in
 	 * @param {string} id - string - The id of the user we want to find.
 	 * @returns The user with the given id.
@@ -101,7 +117,7 @@ export class UserService {
 	 * @param {string} id - string - the id of the user we want to find
 	 * @returns An array of users with their tags.
 	 */
-	async findUserCardsById(id: string) {
+	async findUserTagsById(id: string) {
 		const oldUser = await this.userRepository
 			.createQueryBuilder(`users`)
 			.leftJoinAndSelect(`users.tags`, `tag`)
@@ -123,5 +139,28 @@ export class UserService {
 			throw new HttpException(`User ${id} not found`, HttpStatus.BAD_REQUEST);
 
 		return await this.userRepository.remove(oldUser);
+	}
+
+	async addTagsById(id: string, dto: TagsNumberDto) {
+		const connection = getConnection();
+		const queryRunner = connection.createQueryRunner();
+
+		await queryRunner.connect();
+		await queryRunner.startTransaction();
+
+		const tags = dto.tags;
+		tags.forEach(async tagId => {
+			try {
+				const oldTag = await this.findTagByTagId(tagId);
+				await queryRunner.manager.insert(Receiving, receiving);
+
+				await queryRunner.commitTransaction();
+			} catch (error) {
+				await queryRunner.rollbackTransaction();
+				throw error;
+			} finally {
+				await queryRunner.release();
+			}
+		});
 	}
 }

@@ -1,7 +1,7 @@
 import {ApiProperty} from "@nestjs/swagger";
 import {TagDto} from "src/tag/dto/tag.dto";
 
-export class UserWithCards {
+export class UserWithTags {
 	@ApiProperty({
 		description: `User email`,
 		example: `example@mail.com`,
@@ -28,7 +28,7 @@ export class UserWithCards {
 	tags: TagDto[];
 }
 
-export class GetUserWithCardsReturn200 {
+export class GetUserWithTagsReturn200 {
 	@ApiProperty({
 		description: `false - all good, true - check errorMessage`,
 		example: false,
@@ -49,7 +49,7 @@ export class GetUserWithCardsReturn200 {
 			],
 		},
 	})
-	user: UserWithCards;
+	user: UserWithTags;
 
 	@ApiProperty({
 		description: `Status code`,
@@ -134,4 +134,42 @@ export class DeleteUserReturn400 {
 		example: `400`,
 	})
 	status: number;
+}
+
+export class GetUserTagsReturn200 {
+	@ApiProperty({
+		description: `false - all good, true - check errorMessage`,
+		example: false,
+	})
+	error: boolean;
+
+	@ApiProperty({
+		description: `Status code`,
+		example: `200`,
+	})
+	status: number;
+
+	@ApiProperty({
+		description: `Array of user tags`,
+		example: {
+			tags: [
+				{
+					id: 1,
+					name: "example",
+					sortOrder: "0",
+				},
+				{
+					id: 2,
+					name: "example",
+					sortOrder: "0",
+				},
+				{
+					id: 3,
+					name: "example",
+					sortOrder: "0",
+				},
+			],
+		},
+	})
+	tags: TagDto[];
 }

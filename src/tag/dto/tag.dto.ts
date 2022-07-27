@@ -1,6 +1,13 @@
 import {TagResponse} from "types";
 import {ApiProperty} from "@nestjs/swagger";
-import {IsNotEmpty, IsNumber, IsString, MaxLength} from "class-validator";
+import {
+	IsArray,
+	IsDefined,
+	IsNotEmpty,
+	IsNumber,
+	IsString,
+	MaxLength,
+} from "class-validator";
 
 export class CreateTagDto {
 	@ApiProperty({
@@ -232,4 +239,11 @@ export class TagDto {
 		example: 0,
 	})
 	sortOrder: number;
+}
+
+export class TagsNumberDto {
+	@IsNotEmpty()
+	@IsArray()
+	@IsDefined()
+	tags: number[];
 }
