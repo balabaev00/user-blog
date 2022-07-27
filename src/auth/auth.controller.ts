@@ -1,4 +1,13 @@
-import {Body, Controller, HttpException, Post, Req, Res, UseGuards} from "@nestjs/common";
+import {
+	Body,
+	Controller,
+	Get,
+	HttpException,
+	Post,
+	Req,
+	Res,
+	UseGuards,
+} from "@nestjs/common";
 import {Request} from "express";
 import {ApiCookieAuth, ApiResponse, ApiTags} from "@nestjs/swagger";
 import {Response} from "express";
@@ -14,6 +23,7 @@ import {
 	LogoutUserReturn200,
 } from "./dto/auth.dto";
 import {AuthGuard} from "./guards/auth.guard";
+import {AccessTokenPayload} from "types";
 
 @Controller(`auth`)
 @ApiTags("Auth")
@@ -86,6 +96,24 @@ export class AuthController {
 			error: false,
 			status: 200,
 			message: `User with <${email}> has been logged out`,
+		};
+	}
+
+	@Get(`token/refresh`)
+	@UseGuards(AuthGuard)
+	@ApiCookieAuth(`jwt`)
+	updateToken(@Req() req: Request, @UserDecorator() payload: AccessTokenPayload) {
+		const newPayload = this.authService.updateToken({
+			email: payload.email,
+			userId: payload.userId,
+		});
+
+		req.headers.authorization = `Bearer ` + newPayload.token;
+
+		return {
+			error: false,
+			status: 200,
+			value: newPayload,
 		};
 	}
 }

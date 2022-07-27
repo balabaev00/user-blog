@@ -67,7 +67,7 @@ export class AuthService {
 	 * @param {AccessTokenPayload} payload - This is the data that we want to encode into the token.
 	 * @returns A JWT token
 	 */
-	private generateToken(payload: AccessTokenPayload) {
+	generateToken(payload: AccessTokenPayload) {
 		const token = this.jwtService.sign(payload);
 
 		return {
@@ -83,5 +83,16 @@ export class AuthService {
 	 */
 	validateRefreshToken(accessToken: string) {
 		return this.jwtService.verify(accessToken);
+	}
+
+	/**
+	 * It takes a payload, generates a new token, and returns the new token
+	 * @param {AccessTokenPayload} payload - The payload that you want to generate a token for.
+	 * @returns The new payload.
+	 */
+	updateToken(payload: AccessTokenPayload) {
+		const newPayload = this.generateToken(payload);
+
+		return newPayload;
 	}
 }

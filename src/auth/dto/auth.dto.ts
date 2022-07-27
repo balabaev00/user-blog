@@ -167,3 +167,26 @@ export class LogoutUserReturn200 {
 	})
 	status: number;
 }
+
+export class TokenUpdateReturn200 {
+	@ApiProperty({
+		description: `false - all good, true - check errorMessage`,
+		example: false,
+	})
+	error: boolean;
+
+	@ApiProperty({
+		description: `User token`,
+		example: {
+			token: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiYWRtaW5AbWFpbC5ydSIsImlhdCI6MTY1Nzg5MjU3NSwiZXhwIjoxNjU3ODkzNDc1fQ.i2Hh-ORRf53KNWXiCqxe25z5gHMuL3HZ68xE5yP6OE0`,
+			expire: 1800,
+		},
+	})
+	value: TokenResponse;
+
+	@ApiProperty({
+		description: `Status code`,
+		example: `200`,
+	})
+	status: number;
+}
