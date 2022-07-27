@@ -1,5 +1,5 @@
 import {Tag} from "../../tag/entity/tag.entity";
-import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, JoinColumn, ManyToMany, PrimaryGeneratedColumn} from "typeorm";
 
 @Entity({name: `users`})
 export class User {
@@ -15,6 +15,6 @@ export class User {
 	@Column({length: 30})
 	nickname: string;
 
-	@OneToMany(() => Tag, tag => tag.creator)
+	@ManyToMany(() => Tag, tag => tag.users)
 	tags: Tag[];
 }

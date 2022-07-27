@@ -122,8 +122,8 @@ export class TagController {
 		if (res instanceof HttpException)
 			return {
 				error: true,
-				status: 400,
-				errorMessage: `Something was wrong`,
+				status: res.getStatus(),
+				errorMessage: res.getResponse(),
 			};
 
 		return {
@@ -152,8 +152,8 @@ export class TagController {
 		if (res instanceof HttpException)
 			return {
 				error: true,
-				status: 400,
-				errorMessage: `Something was wrong`,
+				status: res.getStatus(),
+				errorMessage: res.getResponse(),
 			};
 
 		return {

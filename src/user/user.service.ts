@@ -152,7 +152,7 @@ export class UserService {
 		tags.forEach(async tagId => {
 			try {
 				const oldTag = await this.findTagByTagId(tagId);
-				await queryRunner.manager.insert(Receiving, receiving);
+				// await queryRunner.manager.insert(Receiving, receiving);
 
 				await queryRunner.commitTransaction();
 			} catch (error) {
