@@ -1,29 +1,43 @@
 import {ApiProperty} from "@nestjs/swagger";
-import {Blog} from "../entity/blog.entity";
+import {IsNotEmpty, IsNumber, IsString, MaxLength} from "class-validator";
+import {Tag} from "../entity/tag.entity";
 
-export class CreateBlogDto {
+export class CreateTagDto {
 	@ApiProperty({
-		description: `Blog name`,
+		description: `Tag name`,
 		example: `First buy`,
 	})
+	@IsString()
+	@IsNotEmpty()
+	@MaxLength(40)
 	name: string;
-}
-
-export class UpdateBlogDto {
-	@ApiProperty({
-		description: `Blog Id`,
-		example: 1,
-	})
-	blogId: number;
 
 	@ApiProperty({
-		description: `Blog name`,
-		example: `Blog name`,
+		description: `Sort order`,
+		example: 0,
 	})
-	name: string;
+	@IsNumber()
+	sortOrder?: number;
 }
 
-export class CreateBlogReturn201 {
+export class UpdateTagDto {
+	@ApiProperty({
+		description: `Tag name`,
+		example: `Tag name`,
+	})
+	@IsString()
+	@MaxLength(40)
+	name?: string;
+
+	@ApiProperty({
+		description: `Sort order`,
+		example: 0,
+	})
+	@IsNumber()
+	sortOrder?: number;
+}
+
+export class CreateTagReturn201 {
 	@ApiProperty({
 		description: `false - all good, true - check errorMessage`,
 		example: false,
@@ -31,15 +45,14 @@ export class CreateBlogReturn201 {
 	error: boolean;
 
 	@ApiProperty({
-		description: `Blog entity`,
+		description: `Tag entity`,
 		example: {
 			id: 1,
-			name: `My blog`,
-			createdAt: new Date(),
-			authorId: 1,
+			name: `My Tag`,
+			sortOrder: 0,
 		},
 	})
-	blog: Blog;
+	tag: {id: number; name: string; sortOrder: number};
 
 	@ApiProperty({
 		description: `Status code`,
@@ -48,7 +61,7 @@ export class CreateBlogReturn201 {
 	status: number;
 }
 
-export class CreateBlogReturn400 {
+export class CreateTagReturn400 {
 	@ApiProperty({
 		description: `false - all good, true - check errorMessage`,
 		example: true,
@@ -57,7 +70,7 @@ export class CreateBlogReturn400 {
 
 	@ApiProperty({
 		description: `Description of error`,
-		example: `Blog has not been created`,
+		example: `Tag has not been created`,
 	})
 	errorMessage: string;
 
@@ -68,7 +81,7 @@ export class CreateBlogReturn400 {
 	status: number;
 }
 
-export class UpdateBlogReturn204 {
+export class UpdateTagReturn204 {
 	@ApiProperty({
 		description: `false - all good, true - check errorMessage`,
 		example: false,

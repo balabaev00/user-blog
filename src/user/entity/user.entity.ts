@@ -1,21 +1,20 @@
-import {Message} from "./../../message/entity/message.entity";
-import {Blog} from "./../../blog/entity/blog.entity";
+import {Tag} from "../../tag/entity/tag.entity";
 import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from "typeorm";
 
 @Entity({name: `users`})
 export class User {
-	@PrimaryGeneratedColumn()
+	@PrimaryGeneratedColumn(`uuid`)
 	id: number;
 
-	@Column()
+	@Column({length: 100})
 	email: string;
 
-	@Column()
+	@Column({length: 100})
 	password: string;
 
-	@OneToMany(() => Blog, blog => blog.author)
-	blogs: Blog[];
+	@Column({length: 30})
+	nickname: string;
 
-	@OneToMany(() => Message, message => message.author)
-	messages: Message[];
+	@OneToMany(() => Tag, tag => tag.creator)
+	tags: Tag[];
 }

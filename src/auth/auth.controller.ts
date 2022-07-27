@@ -1,6 +1,8 @@
-import {Body, Controller, HttpException, Post, Res} from "@nestjs/common";
+import {Body, Controller, HttpException, Post, Req, Res, UseGuards} from "@nestjs/common";
+import {Request} from "express";
 import {ApiResponse, ApiTags} from "@nestjs/swagger";
 import {Response} from "express";
+import {UserDecorator} from "src/user/decorators/user.decorator";
 import {AuthService} from "./auth.service";
 import {
 	AuthDto,
@@ -9,14 +11,16 @@ import {
 	LoginDto,
 	LoginUserReturn200,
 	LoginUserReturn400,
+	LogoutUserReturn200,
 } from "./dto/auth.dto";
+import {AuthGuard} from "./guards/auth.guard";
 
 @Controller(`auth`)
 @ApiTags("auth")
 export class AuthController {
 	constructor(private authService: AuthService) {}
 
-	@Post(`local/signUp`)
+	@Post(`signin`)
 	@ApiResponse({
 		status: 201,
 		description: `OK`,
@@ -28,23 +32,24 @@ export class AuthController {
 		type: CreateUserReturn400,
 	})
 	async signUpLocal(@Body() dto: AuthDto, @Res({passthrough: true}) r: Response) {
-		const result = await this.authService.signUpLocal(dto);
+		try {
+			const res = await this.authService.signUpLocal(dto);
 
-		if (result === `Email is busy`)
+			return {
+				error: false,
+				status: 201,
+				token: res,
+			};
+		} catch (error) {
 			return {
 				error: true,
-				status: 400,
-				errorMessage: result,
+				status: error.status,
+				errorMessage: error.response,
 			};
-
-		return {
-			error: false,
-			status: 201,
-			accessToken: result,
-		};
+		}
 	}
 
-	@Post(`local/signIn`)
+	@Post(`login`)
 	@ApiResponse({
 		status: 200,
 		description: `OK`,
@@ -56,15 +61,33 @@ export class AuthController {
 		type: LoginUserReturn400,
 	})
 	async signInLocal(@Body() dto: LoginDto, @Res({passthrough: true}) r: Response) {
-		const resp = await this.authService.signInLocal(dto);
+		try {
+			const res = await this.authService.signInLocal(dto);
 
-		if (resp instanceof HttpException)
+			return {error: false, status: 200, token: res};
+		} catch (error) {
 			return {
 				error: true,
-				status: 400,
-				errorMessage: `Something is wrong`,
+				status: error.status,
+				errorMessage: error.response,
 			};
+		}
+	}
 
-		return {error: false, status: 200, accessToken: resp};
+	@Post(`logout`)
+	@UseGuards(AuthGuard)
+	@ApiResponse({
+		status: 200,
+		description: `OK`,
+		type: LogoutUserReturn200,
+	})
+	async logout(@UserDecorator(`email`) email: string, @Req() req: Request) {
+		req.headers.authorization = null;
+
+		return {
+			error: false,
+			status: 200,
+			message: `User with <${email}> has been logged out`,
+		};
 	}
 }

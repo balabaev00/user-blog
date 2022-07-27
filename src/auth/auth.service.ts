@@ -4,28 +4,34 @@ import {AuthDto, LoginDto} from "./dto/auth.dto";
 import * as bcrypt from "bcrypt";
 import {JwtService} from "@nestjs/jwt";
 import {AccessTokenPayload} from "types";
+import {ConfigService} from "@nestjs/config";
 
 @Injectable()
 export class AuthService {
-	constructor(private userService: UserService, private jwtService: JwtService) {}
+	constructor(
+		private userService: UserService,
+		private jwtService: JwtService,
+		private configService: ConfigService
+	) {}
 
 	/**
-	 * We create a user, if the user is created successfully, we generate a token and return it
-	 * @param {AuthDto} dto - AuthDto - the data transfer object that contains the email and password of
-	 * the user.
-	 * @returns accessToken
+	 * It creates a user, generates a token, and returns the token
+	 * @param {AuthDto} dto - AuthDto - this is the data transfer object that we created earlier.
+	 * @returns The access token is being returned.
 	 */
 	async signUpLocal(dto: AuthDto) {
-		const user = await this.userService.createUser(dto.email, dto.password);
+		try {
+			const user = await this.userService.createUser(dto.email, dto.password);
 
-		if (user === `Email is busy`) return user;
+			const accessToken = this.generateToken({
+				userId: user.id,
+				email: user.email,
+			});
 
-		const accessToken = this.generateToken({
-			userId: user.id,
-			email: user.email,
-		});
-
-		return accessToken;
+			return accessToken;
+		} catch (error) {
+			return error;
+		}
 	}
 
 	/**
@@ -37,12 +43,12 @@ export class AuthService {
 	async signInLocal(dto: LoginDto) {
 		const user = await this.userService.findOneByEmail(dto.email);
 
-		if (!user) return new HttpException(`User not found`, HttpStatus.BAD_REQUEST);
+		if (!user) throw new HttpException(`User not found`, HttpStatus.BAD_REQUEST);
 
 		const isPasswordMatching = await bcrypt.compare(dto.password, user.password);
 
 		if (!isPasswordMatching)
-			return new HttpException(`Password is wrong`, HttpStatus.BAD_REQUEST);
+			throw new HttpException(`Password is wrong`, HttpStatus.BAD_REQUEST);
 
 		const accessToken = this.generateToken({
 			userId: user.id,
@@ -58,7 +64,12 @@ export class AuthService {
 	 * @returns A JWT token
 	 */
 	private generateToken(payload: AccessTokenPayload) {
-		return this.jwtService.sign(payload);
+		const token = this.jwtService.sign(payload);
+
+		return {
+			token,
+			expire: this.configService.get<number>(`JWT_EXPIRES_IN`) * 60,
+		};
 	}
 
 	/**

@@ -1,4 +1,4 @@
-import {Injectable} from "@nestjs/common";
+import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
 import {Repository} from "typeorm";
 import {User} from "./entity/user.entity";
 import * as bcrypt from "bcrypt";
@@ -20,7 +20,7 @@ export class UserService {
 	async createUser(email: string, password: string) {
 		const oldUser = await this.findOneByEmail(email);
 
-		if (oldUser) return `Email is busy`;
+		if (oldUser) throw new HttpException(`Email is busy`, HttpStatus.BAD_REQUEST);
 
 		const newUser = new User();
 		newUser.email = email;

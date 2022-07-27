@@ -1,5 +1,5 @@
-import {User} from "./../user/entity/user.entity";
-import {AuthGuard} from "./../auth/guards/auth.guard";
+import {User} from "../user/entity/user.entity";
+import {AuthGuard} from "../auth/guards/auth.guard";
 import {
 	Body,
 	Controller,
@@ -12,11 +12,14 @@ import {
 	UseGuards,
 } from "@nestjs/common";
 import {UserDecorator} from "../user/decorators/user.decorator";
-import {BlogService} from "./blog.service";
+import {TagService} from "./tag.service";
 import {
 	CreateBlogDto,
 	CreateBlogReturn201,
 	CreateBlogReturn400,
+	CreateTagDto,
+	CreateTagReturn201,
+	CreateTagReturn400,
 	DeleteBlogReturn204,
 	DeleteBlogReturn400,
 	GetBlogByUserIdReturn200,
@@ -24,47 +27,78 @@ import {
 	UpdateBlogDto,
 	UpdateBlogReturn204,
 	UpdateBlogReturn400,
-} from "./dto/blog.dto";
+} from "./dto/tag.dto";
 import {ApiCookieAuth, ApiResponse, ApiTags} from "@nestjs/swagger";
-import {Blog} from "./entity/blog.entity";
+import {Tag} from "./entity/tag.entity";
 import {BlogResponse} from "types";
 
-@Controller(`blog`)
-@ApiTags(`blog`)
-export class BlogController {
-	constructor(private blogService: BlogService) {}
+@Controller(`tag`)
+@ApiTags(`Tag`)
+export class TagController {
+	constructor(private tagService: TagService) {}
 
-	@Post(`create`)
+	@Post(``)
 	@UseGuards(AuthGuard)
 	@ApiResponse({
 		status: 201,
 		description: `OK`,
-		type: CreateBlogReturn201,
+		type: CreateTagReturn201,
 	})
 	@ApiResponse({
 		status: 400,
 		description: `Something is wrong`,
-		type: CreateBlogReturn400,
+		type: CreateTagReturn400,
 	})
 	@ApiCookieAuth(`jwt`)
-	async create(@Body() dto: CreateBlogDto, @UserDecorator() user: User) {
-		const res = await this.blogService.create(dto, user);
+	async create(@Body() dto: CreateTagDto, @UserDecorator(`email`) userEmail: string) {
+		try {
+			const res = await this.tagService.create(dto, userEmail);
 
-		if (res === `User not found`)
+			return {
+				error: false,
+				status: 201,
+				tag: {
+					id: res.id,
+					name: res.name,
+					sortOrder: res.sortOrder,
+				},
+			};
+		} catch (error) {
+			return {
+				error: true,
+				status: error.status,
+				errorMessage: error.response,
+			};
+		}
+	}
+
+	@Get(`:id`)
+	@UseGuards(AuthGuard)
+	async getById(@Param(`id`) id: number) {
+		const res = await this.tagService.findById(id);
+
+		if (!res)
 			return {
 				error: true,
 				status: 400,
-				errorMessage: `Something was wrong`,
+				errorMessage: `Tag <${id}> not found`,
 			};
 
 		return {
 			error: false,
-			status: 201,
-			blog: this.prepareResponse(res),
+			status: 200,
+			tag: {
+				name: res.name,
+				sortOrder: res.sortOrder,
+				creator: {
+					nickname: res.creator.nickname,
+					uid: res.creator.id,
+				},
+			},
 		};
 	}
 
-	@Put(`update`)
+	@Put(`:id`)
 	@UseGuards(AuthGuard)
 	@ApiResponse({
 		status: 204,
@@ -77,8 +111,12 @@ export class BlogController {
 		type: UpdateBlogReturn400,
 	})
 	@ApiCookieAuth(`jwt`)
-	async update(@Body() dto: UpdateBlogDto, @UserDecorator(`userId`) userId: number) {
-		const res = await this.blogService.update(dto, userId);
+	async update(
+		@Param(`id`) tagId: number,
+		@Body() dto: UpdateBlogDto,
+		@UserDecorator(`userId`) userId: number
+	) {
+		const res = await this.tagService.update(tagId, dto, userId);
 
 		if (res instanceof HttpException)
 			return {
@@ -159,17 +197,14 @@ export class BlogController {
 		};
 	}
 
-	/**
-	 * It takes a Blog object and returns a BlogResponse object
-	 * @param {Blog} blog - Blog - this is the blog object that we're going to be returning.
-	 * @returns A BlogResponse object.
-	 */
-	private prepareResponse(blog: Blog): BlogResponse {
+	private prepareResponse(res: any) {
 		return {
-			id: blog.id,
-			name: blog.name,
-			createdAt: blog.createdAt,
-			authorId: blog.author.id,
+			name: res.name,
+			sortOrder: res.sortOrder,
+			creator: {
+				nickname: res.creator.nickname,
+				uid: res.creator.id,
+			},
 		};
 	}
 }

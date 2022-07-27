@@ -1,12 +1,11 @@
-import {MessageModule} from "./../message/message.module";
-import {BlogModule} from "./../blog/blog.module";
+import {TagModule} from "../tag/tag.module";
 import {AuthMiddleware} from "./../auth/middlewares/auth.middleware";
 import {AuthModule} from "./../auth/auth.module";
 import {MiddlewareConsumer, Module, RequestMethod} from "@nestjs/common";
 import {UserModule} from "./../user/user.module";
 
 @Module({
-	imports: [AuthModule, UserModule, BlogModule, MessageModule],
+	imports: [AuthModule, UserModule, TagModule],
 	controllers: [],
 	providers: [],
 })

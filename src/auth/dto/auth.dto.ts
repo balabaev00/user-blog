@@ -1,17 +1,28 @@
 import {ApiProperty} from "@nestjs/swagger";
+import {IsEmail, IsString, Matches} from "class-validator";
 
 export class AuthDto {
 	@ApiProperty({
 		description: `Email`,
 		example: `admin@mail.ru`,
 	})
+	@IsString()
+	@IsEmail()
 	email: string;
 
 	@ApiProperty({
 		description: `Password`,
 		example: `123789qwe`,
 	})
+	@IsString()
+	@Matches("^(?=.*[A-Za-z])(?=.*d)[A-Za-zd]{8,}$")
 	password: string;
+
+	@ApiProperty({
+		description: `Nickname`,
+		example: `Admin3000`,
+	})
+	nickname: string;
 }
 
 export class LoginDto {
@@ -39,7 +50,7 @@ export class CreateUserReturn201 {
 		description: `User token`,
 		example: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiYWRtaW5AbWFpbC5ydSIsImlhdCI6MTY1Nzg5MjU3NSwiZXhwIjoxNjU3ODkzNDc1fQ.i2Hh-ORRf53KNWXiCqxe25z5gHMuL3HZ68xE5yP6OE0`,
 	})
-	accessToken: string;
+	token: string;
 
 	@ApiProperty({
 		description: `Status code`,
@@ -79,7 +90,7 @@ export class LoginUserReturn200 {
 		description: `User token`,
 		example: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiYWRtaW5AbWFpbC5ydSIsImlhdCI6MTY1Nzg5MjU3NSwiZXhwIjoxNjU3ODkzNDc1fQ.i2Hh-ORRf53KNWXiCqxe25z5gHMuL3HZ68xE5yP6OE0`,
 	})
-	accessToken: string;
+	token: string;
 
 	@ApiProperty({
 		description: `Status code`,
@@ -104,6 +115,26 @@ export class LoginUserReturn400 {
 	@ApiProperty({
 		description: `Status code`,
 		example: `400`,
+	})
+	status: number;
+}
+
+export class LogoutUserReturn200 {
+	@ApiProperty({
+		description: `false - all good, true - check errorMessage`,
+		example: false,
+	})
+	error: boolean;
+
+	@ApiProperty({
+		description: `Message`,
+		example: `User has been logged out`,
+	})
+	message: string;
+
+	@ApiProperty({
+		description: `Status code`,
+		example: `200`,
 	})
 	status: number;
 }
